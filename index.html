@@ -86,6 +86,9 @@
                 </div>
             </div>
             <div class="menu-right">
+                <div class="menu-item-group" id="spotlight-btn" onclick="toggleSpotlight()" style="cursor: pointer; margin-right: 15px;">
+                    <span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                </div>
                 <div class="menu-item-group" id="control-center-btn" onclick="toggleControlCenter()" style="cursor: pointer; display: flex; align-items: center;">
                     <span class="menu-icon"><i class="fa-solid fa-wifi"></i></span>
                     <span class="menu-icon" id="battery-status"><i class="fa-solid fa-battery-full"></i> 100%</span>
@@ -106,6 +109,14 @@
             <div class="dropdown-divider"></div>
             <div class="context-item" onclick="alert('Función de Nueva Carpeta en desarrollo')">Nueva carpeta</div>
             <div class="context-item" onclick="document.querySelector('.dock-item[data-app=editor]').click()">Nuevo archivo de texto</div>
+        </div>
+
+        <!-- SPOTLIGHT SEARCH -->
+        <div id="spotlight-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); backdrop-filter:blur(5px); z-index:9000; align-items:center; justify-content:center;">
+            <div style="background:var(--glass-bg); backdrop-filter:blur(30px); border:1px solid var(--glass-border); border-radius:12px; width:500px; padding:15px; box-shadow:var(--shadow-lg); display:flex; align-items:center;">
+                <i class="fa-solid fa-magnifying-glass" style="font-size:20px; color:var(--text-secondary); margin-right:15px;"></i>
+                <input type="text" id="spotlight-input" placeholder="Búsqueda Universal..." style="flex:1; background:transparent; border:none; outline:none; font-size:24px; color:var(--text-primary); font-family:inherit;">
+            </div>
         </div>
 
         <!-- CONTROL CENTER -->
@@ -174,9 +185,46 @@
                     <div class="dock-icon" style="background:linear-gradient(135deg,#ffd54f,#ffb300)"><i class="fa-solid fa-note-sticky" style="color:white"></i></div>
                     <span class="dock-tooltip">Notas</span>
                 </div>
+                <div class="dock-item" data-app="galeria">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#34e89e,#0f3443)"><i class="fa-regular fa-image" style="color:white"></i></div>
+                    <span class="dock-tooltip">Galería</span>
+                </div>
+                <div class="dock-item" data-app="monitor">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#000000,#434343)"><i class="fa-solid fa-heart-pulse" style="color:white"></i></div>
+                    <span class="dock-tooltip">Monitor</span>
+                </div>
+                <div class="dock-item" data-app="grabadora">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#f12711,#f5af19)"><i class="fa-solid fa-microphone" style="color:white"></i></div>
+                    <span class="dock-tooltip">Grabadora</span>
+                </div>
+                <div class="dock-item" data-app="juego">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#8E2DE2,#4A00E0)"><i class="fa-solid fa-gamepad" style="color:white"></i></div>
+                    <span class="dock-tooltip">Juego Retro</span>
+                </div>
                 <div class="dock-item" data-app="papelera">
                     <div class="dock-icon" style="background:linear-gradient(135deg,#90a4ae,#607d8b)"><i class="fa-solid fa-trash" style="color:white"></i></div>
                     <span class="dock-tooltip">Papelera</span>
+                </div>
+                <div class="dock-divider"></div>
+                <div class="dock-item" data-app="calendario">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#e53935,#e35d5b)"><i class="fa-regular fa-calendar" style="color:white"></i></div>
+                    <span class="dock-tooltip">Calendario</span>
+                </div>
+                <div class="dock-item" data-app="tiempo">
+                    <div class="dock-icon" style="background:linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%)"><i class="fa-solid fa-cloud-sun" style="color:white"></i></div>
+                    <span class="dock-tooltip">Clima</span>
+                </div>
+                <div class="dock-item" data-app="terminal">
+                    <div class="dock-icon" style="background:#111;"><i class="fa-solid fa-terminal" style="color:#0f0"></i></div>
+                    <span class="dock-tooltip">Terminal</span>
+                </div>
+                <div class="dock-item" data-app="pintar">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#f2994a,#f2c94c)"><i class="fa-solid fa-palette" style="color:white"></i></div>
+                    <span class="dock-tooltip">Pintar</span>
+                </div>
+                <div class="dock-item" data-app="tresenraya">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#8E2DE2,#4A00E0)"><i class="fa-solid fa-hashtag" style="color:white"></i></div>
+                    <span class="dock-tooltip">Tres en Raya</span>
                 </div>
                 <div class="dock-divider"></div>
                 <div class="dock-item" data-app="ajustes">

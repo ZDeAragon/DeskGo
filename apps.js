@@ -273,6 +273,371 @@ const apps = {
             if(window.relojInterval) clearInterval(window.relojInterval);
             window.relojInterval = setInterval(updateReloj, 1000);
         }
+    },
+
+    monitor: { title:'Monitor de Recursos', w:400, h:300,
+        html: `<div style="padding:20px;height:100%;box-sizing:border-box;">
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:14px;"><span>Uso de CPU</span><span id="cpu-val">--%</span></div>
+                <div style="width:100%;height:10px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden;">
+                    <div id="cpu-bar" style="height:100%;background:var(--accent-primary);width:0%;transition:width 0.5s ease;"></div>
+                </div>
+            </div>
+            <div style="margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:14px;"><span>Uso de RAM</span><span id="ram-val">--%</span></div>
+                <div style="width:100%;height:10px;background:rgba(255,255,255,0.1);border-radius:5px;overflow:hidden;">
+                    <div id="ram-bar" style="height:100%;background:#34e89e;width:0%;transition:width 0.5s ease;"></div>
+                </div>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);">Simulando carga de sistema. La API de navegador no permite leer la CPU real.</div>
+        </div>`,
+        onOpen: () => {
+            const updateMonitor = () => {
+                if(!document.getElementById('cpu-bar')) return;
+                const cpu = Math.floor(Math.random() * 20) + 5; // 5-25%
+                const ram = Math.floor(Math.random() * 10) + 40; // 40-50%
+                document.getElementById('cpu-bar').style.width = cpu + '%';
+                document.getElementById('cpu-val').textContent = cpu + '%';
+                document.getElementById('ram-bar').style.width = ram + '%';
+                document.getElementById('ram-val').textContent = ram + '%';
+            };
+            updateMonitor();
+            if(window.monitorInterval) clearInterval(window.monitorInterval);
+            window.monitorInterval = setInterval(updateMonitor, 2000);
+        }
+    },
+
+    grabadora: { title:'Grabadora de Voz', w:350, h:250,
+        html: `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:#1a1a1a;">
+            <div id="rec-time" style="font-size:36px;font-weight:300;margin-bottom:20px;font-variant-numeric:tabular-nums;color:white;">00:00</div>
+            <button id="rec-btn" style="width:60px;height:60px;border-radius:50%;background:#ff3b30;border:4px solid white;cursor:pointer;outline:none;" onclick="toggleRecord()"></button>
+            <div style="margin-top:20px;font-size:12px;color:#aaa;">Haz clic para grabar</div>
+        </div>`,
+        onOpen: () => {
+            window.recSeconds = 0;
+            window.isRecording = false;
+            window.recInterval = null;
+            window.toggleRecord = () => {
+                const btn = document.getElementById('rec-btn');
+                const time = document.getElementById('rec-time');
+                if(!window.isRecording) {
+                    window.isRecording = true;
+                    btn.style.borderRadius = '20%';
+                    window.recSeconds = 0;
+                    window.recInterval = setInterval(() => {
+                        window.recSeconds++;
+                        const m = String(Math.floor(window.recSeconds / 60)).padStart(2, '0');
+                        const s = String(window.recSeconds % 60).padStart(2, '0');
+                        time.textContent = m + ':' + s;
+                    }, 1000);
+                    if(window.showNotification) showNotification('Grabando', 'La grabadora ha iniciado.', 'fa-microphone');
+                } else {
+                    window.isRecording = false;
+                    btn.style.borderRadius = '50%';
+                    clearInterval(window.recInterval);
+                    if(window.showNotification) showNotification('Grabación Detenida', 'Audio guardado (simulado).', 'fa-check');
+                }
+            };
+        }
+    },
+
+    juego: { title:'Snake Retro', w:400, h:450,
+        html: `<div style="display:flex;flex-direction:column;align-items:center;background:#222;height:100%;padding-top:20px;">
+            <div style="color:#0f0;font-family:monospace;font-size:24px;margin-bottom:10px;">SNAKE</div>
+            <canvas id="snake-canvas" width="300" height="300" style="background:#000;border:2px solid #0f0;"></canvas>
+            <div style="color:white;font-size:12px;margin-top:15px;">Usa las flechas del teclado para jugar.</div>
+        </div>`,
+        onOpen: () => {
+            const canvas = document.getElementById('snake-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const box = 15;
+            let snake = [{x: 9 * box, y: 10 * box}];
+            let food = {x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box};
+            let d;
+            let score = 0;
+            
+            const keyHandler = (e) => {
+                if(e.keyCode === 37 && d !== 'RIGHT') d = 'LEFT';
+                else if(e.keyCode === 38 && d !== 'DOWN') d = 'UP';
+                else if(e.keyCode === 39 && d !== 'LEFT') d = 'RIGHT';
+                else if(e.keyCode === 40 && d !== 'UP') d = 'DOWN';
+            };
+            document.addEventListener('keydown', keyHandler);
+            
+            const draw = () => {
+                if(!document.getElementById('snake-canvas')) {
+                    clearInterval(window.snakeGame);
+                    document.removeEventListener('keydown', keyHandler);
+                    return;
+                }
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 300, 300);
+                
+                for(let i = 0; i < snake.length; i++) {
+                    ctx.fillStyle = (i === 0) ? '#0f0' : '#0a0';
+                    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                }
+                
+                ctx.fillStyle = 'red';
+                ctx.fillRect(food.x, food.y, box, box);
+                
+                let snakeX = snake[0].x;
+                let snakeY = snake[0].y;
+                
+                if(d === 'LEFT') snakeX -= box;
+                if(d === 'UP') snakeY -= box;
+                if(d === 'RIGHT') snakeX += box;
+                if(d === 'DOWN') snakeY += box;
+                
+                if(snakeX === food.x && snakeY === food.y) {
+                    score++;
+                    food = {x: Math.floor(Math.random()*19+1)*box, y: Math.floor(Math.random()*19+1)*box};
+                } else {
+                    snake.pop();
+                }
+                
+                let newHead = {x: snakeX, y: snakeY};
+                
+                if(snakeX < 0 || snakeX >= 300 || snakeY < 0 || snakeY >= 300) {
+                    clearInterval(window.snakeGame);
+                    ctx.fillStyle = 'white';
+                    ctx.font = '20px monospace';
+                    ctx.fillText('Game Over', 100, 150);
+                    return;
+                }
+                
+                snake.unshift(newHead);
+            };
+            
+            if(window.snakeGame) clearInterval(window.snakeGame);
+            window.snakeGame = setInterval(draw, 120);
+        }
+    },
+
+    galeria: { title:'Galería', w:600, h:450,
+        html: `<div style="display:flex;flex-direction:column;height:100%;background:var(--glass-bg);">
+            <div class="toolbar" style="border-bottom:1px solid var(--glass-border);">
+                <span class="toolbar-info" style="font-weight:600">Mis Fotos</span>
+            </div>
+            <div style="padding:15px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:15px;overflow-y:auto;height:calc(100% - 40px);">
+                <div style="height:120px;border-radius:8px;background:url('wallpaper.png') center/cover;box-shadow:var(--shadow-sm);"></div>
+                <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);box-shadow:var(--shadow-sm);"></div>
+                <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#1a2a6c,#b21f1f,#fdbb2d);box-shadow:var(--shadow-sm);"></div>
+                <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#11998e,#38ef7d);box-shadow:var(--shadow-sm);"></div>
+                <div style="height:120px;border-radius:8px;background:#ddd;display:flex;align-items:center;justify-content:center;color:#888;"><i class="fa-solid fa-plus fa-2x"></i></div>
+            </div>
+        </div>`,
+        onOpen: () => {}
+    },
+
+    calendario: { title:'Calendario', w:400, h:450,
+        html: `<div style="display:flex;flex-direction:column;height:100%;background:var(--glass-bg);color:var(--text-primary);padding:15px;box-sizing:border-box;">
+            <div style="text-align:center;font-size:24px;font-weight:600;margin-bottom:15px;color:var(--accent-primary);" id="cal-month">Mes Año</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-weight:bold;margin-bottom:10px;font-size:12px;color:var(--text-secondary);">
+                <div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div>
+            </div>
+            <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;text-align:center;font-size:14px;"></div>
+        </div>`,
+        onOpen: () => {
+            const grid = document.getElementById('cal-grid');
+            if(!grid) return;
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('cal-month').textContent = monthNames[month] + ' ' + year;
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startDay = firstDay === 0 ? 6 : firstDay - 1;
+            
+            grid.innerHTML = '';
+            for(let i = 0; i < startDay; i++) {
+                grid.innerHTML += '<div></div>';
+            }
+            for(let i = 1; i <= daysInMonth; i++) {
+                const isToday = i === now.getDate() ? 'background:var(--accent-primary);color:white;border-radius:50%;' : 'background:rgba(255,255,255,0.05);border-radius:50%;';
+                grid.innerHTML += `<div style="padding:10px 0;cursor:pointer;${isToday}">${i}</div>`;
+            }
+        }
+    },
+
+    tiempo: { title:'Clima', w:350, h:400,
+        html: `<div style="display:flex;flex-direction:column;align-items:center;height:100%;background:linear-gradient(to bottom, #4facfe 0%, #00f2fe 100%);color:white;padding:30px;box-sizing:border-box;">
+            <div style="font-size:24px;font-weight:600;margin-bottom:5px;">Madrid</div>
+            <div style="font-size:14px;margin-bottom:20px;opacity:0.9;">Cielo despejado</div>
+            <i class="fa-solid fa-sun" style="font-size:72px;color:#FFD700;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(255,215,0,0.5));"></i>
+            <div style="font-size:64px;font-weight:300;margin-bottom:30px;">22°</div>
+            <div style="display:flex;justify-content:space-between;width:100%;font-size:14px;background:rgba(0,0,0,0.2);padding:15px;border-radius:12px;">
+                <div style="text-align:center;"><i class="fa-solid fa-wind" style="margin-bottom:5px;display:block;"></i>12 km/h</div>
+                <div style="text-align:center;"><i class="fa-solid fa-droplet" style="margin-bottom:5px;display:block;"></i>45%</div>
+                <div style="text-align:center;"><i class="fa-solid fa-temperature-half" style="margin-bottom:5px;display:block;"></i>Max 25°</div>
+            </div>
+            <div style="font-size:10px;margin-top:20px;opacity:0.6;">Datos simulados</div>
+        </div>`,
+        onOpen: () => {}
+    },
+
+    terminal: { title:'Terminal', w:550, h:400,
+        html: `<div style="display:flex;flex-direction:column;height:100%;background:#0c0c0c;color:#0f0;font-family:monospace;font-size:14px;padding:10px;box-sizing:border-box;border-radius:0 0 8px 8px;">
+            <div id="term-output" style="flex:1;overflow-y:auto;white-space:pre-wrap;margin-bottom:10px;">DeskGo OS Terminal v1.0.0
+Type 'help' for a list of available commands.
+</div>
+            <div style="display:flex;">
+                <span style="color:#0f0;margin-right:8px;">C:\\DeskGo&gt;</span>
+                <input type="text" id="term-input" style="flex:1;background:transparent;border:none;color:#0f0;font-family:monospace;font-size:14px;outline:none;" onkeydown="if(event.key==='Enter') executeCommand(this.value)" autocomplete="off">
+            </div>
+        </div>`,
+        onOpen: () => {
+            document.getElementById('term-input').focus();
+            window.executeCommand = (cmd) => {
+                const out = document.getElementById('term-output');
+                const input = document.getElementById('term-input');
+                if(!out || !input) return;
+                
+                out.innerHTML += \`\\nC:\\\\DeskGo&gt; \${cmd}\\n\`;
+                
+                const c = cmd.trim().toLowerCase();
+                if(c === 'help') {
+                    out.innerHTML += 'Available commands: help, clear, date, echo [text], whoami, ver\\n';
+                } else if(c === 'clear' || c === 'cls') {
+                    out.innerHTML = 'DeskGo OS Terminal v1.0.0\\n';
+                } else if(c === 'date') {
+                    out.innerHTML += new Date().toString() + '\\n';
+                } else if(c.startsWith('echo ')) {
+                    out.innerHTML += cmd.substring(5) + '\\n';
+                } else if(c === 'whoami') {
+                    out.innerHTML += (window.userSettings && window.userSettings.name ? window.userSettings.name : 'user') + '\\n';
+                } else if(c === 'ver') {
+                    out.innerHTML += 'DeskGo OS Version 1.0\\n';
+                } else if(c !== '') {
+                    out.innerHTML += \`'\${c}' is not recognized as an internal or external command.\\n\`;
+                }
+                
+                input.value = '';
+                out.scrollTop = out.scrollHeight;
+            };
+        }
+    },
+
+    pintar: { title:'Pintar', w:600, h:500,
+        html: `<div style="display:flex;flex-direction:column;height:100%;background:#f0f0f0;border-radius:0 0 10px 10px;overflow:hidden;">
+            <div class="toolbar" style="background:white;border-bottom:1px solid #ccc;gap:10px;padding:10px;">
+                <input type="color" id="paint-color" value="#000000" style="width:30px;height:30px;padding:0;border:none;cursor:pointer;">
+                <input type="range" id="paint-size" min="1" max="20" value="3" style="width:80px;">
+                <button class="toolbar-btn" onclick="clearCanvas()"><i class="fa-solid fa-eraser"></i> Limpiar</button>
+            </div>
+            <canvas id="paint-canvas" style="flex:1;background:white;cursor:crosshair;"></canvas>
+        </div>`,
+        onOpen: () => {
+            const canvas = document.getElementById('paint-canvas');
+            if(!canvas) return;
+            // Set actual size
+            setTimeout(() => {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height - 50; 
+                
+                const ctx = canvas.getContext('2d');
+                let isDrawing = false;
+                let lastX = 0;
+                let lastY = 0;
+                
+                const draw = (e) => {
+                    if(!isDrawing) return;
+                    const color = document.getElementById('paint-color').value;
+                    const size = document.getElementById('paint-size').value;
+                    const cRect = canvas.getBoundingClientRect();
+                    const x = e.clientX - cRect.left;
+                    const y = e.clientY - cRect.top;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(x, y);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = size;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                    
+                    lastX = x;
+                    lastY = y;
+                };
+                
+                canvas.addEventListener('mousedown', (e) => {
+                    isDrawing = true;
+                    const cRect = canvas.getBoundingClientRect();
+                    lastX = e.clientX - cRect.left;
+                    lastY = e.clientY - cRect.top;
+                });
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', () => isDrawing = false);
+                canvas.addEventListener('mouseout', () => isDrawing = false);
+                
+                window.clearCanvas = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
+            }, 100);
+        }
+    },
+
+    tresenraya: { title:'Tres en Raya', w:350, h:400,
+        html: `<div style="display:flex;flex-direction:column;align-items:center;background:#1e1e1e;color:white;height:100%;padding:20px;box-sizing:border-box;border-radius:0 0 10px 10px;">
+            <div style="font-size:24px;font-weight:bold;margin-bottom:20px;color:var(--accent-primary);">Tic Tac Toe</div>
+            <div id="ttt-status" style="margin-bottom:15px;font-size:16px;">Turno de: <span style="color:#ff3b30">X</span></div>
+            <div id="ttt-board" style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#444;padding:5px;border-radius:10px;">
+                \${Array(9).fill().map((_,i) => \`<div class="ttt-cell" onclick="tttClick(\${i})" style="width:80px;height:80px;background:#222;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:bold;cursor:pointer;transition:background 0.2s;"></div>\`).join('')}
+            </div>
+            <button onclick="tttReset()" style="margin-top:20px;padding:10px 20px;background:var(--accent-primary);color:white;border:none;border-radius:20px;cursor:pointer;font-weight:bold;">Reiniciar</button>
+        </div>`,
+        onOpen: () => {
+            window.tttBoard = Array(9).fill('');
+            window.tttCurrent = 'X';
+            window.tttActive = true;
+            
+            window.tttClick = (i) => {
+                if(!window.tttActive || window.tttBoard[i] !== '') return;
+                
+                window.tttBoard[i] = window.tttCurrent;
+                const cells = document.querySelectorAll('.ttt-cell');
+                cells[i].textContent = window.tttCurrent;
+                cells[i].style.color = window.tttCurrent === 'X' ? '#ff3b30' : '#34c759';
+                
+                checkWin();
+            };
+            
+            const checkWin = () => {
+                const winCond = [
+                    [0,1,2], [3,4,5], [6,7,8],
+                    [0,3,6], [1,4,7], [2,5,8],
+                    [0,4,8], [2,4,6]
+                ];
+                let won = false;
+                for(let c of winCond) {
+                    if(window.tttBoard[c[0]] && window.tttBoard[c[0]] === window.tttBoard[c[1]] && window.tttBoard[c[0]] === window.tttBoard[c[2]]) {
+                        won = true; break;
+                    }
+                }
+                
+                const status = document.getElementById('ttt-status');
+                if(won) {
+                    status.innerHTML = \`¡Ganador: <span style="color:\${window.tttCurrent === 'X' ? '#ff3b30' : '#34c759'}">\${window.tttCurrent}</span>!\`;
+                    window.tttActive = false;
+                } else if(!window.tttBoard.includes('')) {
+                    status.textContent = '¡Empate!';
+                    window.tttActive = false;
+                } else {
+                    window.tttCurrent = window.tttCurrent === 'X' ? 'O' : 'X';
+                    status.innerHTML = \`Turno de: <span style="color:\${window.tttCurrent === 'X' ? '#ff3b30' : '#34c759'}">\${window.tttCurrent}</span>\`;
+                }
+            };
+            
+            window.tttReset = () => {
+                window.tttBoard = Array(9).fill('');
+                window.tttCurrent = 'X';
+                window.tttActive = true;
+                document.querySelectorAll('.ttt-cell').forEach(c => c.textContent = '');
+                document.getElementById('ttt-status').innerHTML = \`Turno de: <span style="color:#ff3b30">X</span>\`;
+            };
+        }
     }
 };
 

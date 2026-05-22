@@ -200,6 +200,31 @@ window.toggleControlCenter = function() {
     }
 };
 
+// ====== SPOTLIGHT SEARCH ======
+window.toggleSpotlight = function() {
+    const sp = document.getElementById('spotlight-overlay');
+    if(!sp) return;
+    if(sp.style.display === 'flex') {
+        sp.style.display = 'none';
+    } else {
+        sp.style.display = 'flex';
+        setTimeout(() => document.getElementById('spotlight-input').focus(), 50);
+    }
+};
+
+document.addEventListener('keydown', e => {
+    // Ctrl + Space to open Spotlight
+    if(e.ctrlKey && e.code === 'Space') {
+        e.preventDefault();
+        toggleSpotlight();
+    }
+    // Esc to close Spotlight
+    if(e.code === 'Escape') {
+        const sp = document.getElementById('spotlight-overlay');
+        if(sp && sp.style.display === 'flex') sp.style.display = 'none';
+    }
+});
+
 document.addEventListener('click', e => {
     document.getElementById('context-menu').style.display = 'none';
     if(!e.target.closest('#calendarWidget') && e.target.id !== 'clock') document.getElementById('calendarWidget').style.display = 'none';
@@ -207,6 +232,8 @@ document.addEventListener('click', e => {
         const cc = document.getElementById('controlCenter');
         if(cc) cc.style.display = 'none';
     }
+    const sp = document.getElementById('spotlight-overlay');
+    if(sp && e.target === sp) sp.style.display = 'none';
 });
 
 loadSettings();
