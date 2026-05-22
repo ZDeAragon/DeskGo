@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Instalador de DeskGo OS</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=11">
+    <hta:application 
+        id="oHTA" 
+        applicationname="DeskGoInstaller" 
+        border="thin" 
+        borderstyle="normal" 
+        caption="yes" 
+        contextmenu="no" 
+        innerborder="no" 
+        maximizebutton="no" 
+        minimizebutton="yes" 
+        navigable="no" 
+        scroll="no" 
+        selection="no" 
+        showintaskbar="yes" 
+        singleinstance="yes" 
+        sysmenu="yes" 
+        version="1.1" 
+        windowstate="normal">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #ececec;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .window {
+            width: 100%;
+            max-width: 520px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .titlebar {
+            height: 38px;
+            background: linear-gradient(to bottom, #f6f6f6, #e1e1e1);
+            border-bottom: 1px solid #c2c2c2;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            position: relative;
+        }
+        .title {
+            width: 100%;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #444;
+            position: absolute;
+            left: 0;
+            pointer-events: none;
+        }
+        .content {
+            padding: 30px 40px;
+            text-align: center;
+        }
+        .icon-container {
+            margin-bottom: 20px;
+        }
+        .icon-container svg {
+            width: 72px;
+            height: 72px;
+            color: #007aff;
+        }
+        h1 { margin: 0 0 8px 0; font-size: 24px; font-weight: 500; color: #111; letter-spacing: -0.5px; }
+        p.subtitle { color: #666; font-size: 13px; margin: 0 0 25px 0; line-height: 1.4; }
+        
+        .segmented-control {
+            display: flex;
+            background: #e5e5ea;
+            border-radius: 8px;
+            padding: 2px;
+            margin-bottom: 25px;
+        }
+        .segment {
+            flex: 1;
+            padding: 6px 0;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .segment.active {
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+            color: #000;
+        }
+        
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 8px 12px;
+            background: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 13px;
+            box-sizing: border-box;
+            outline: none;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+        }
+        select:focus, input[type="text"]:focus {
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        button {
+            padding: 8px 24px;
+            background: #007aff;
+            color: white;
+            border: 1px solid #006ce6;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        button:hover { background: #0070eb; }
+        button:disabled { background: #b0c4de; border-color: #a0b4ce; cursor: not-allowed; box-shadow: none; }
+        
+        .progress-container {
+            width: 100%;
+            background: #e5e5ea;
+            border-radius: 4px;
+            height: 6px;
+            margin-top: 20px;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #007aff;
+            transition: width 0.3s;
+        }
+        
+        #log {
+            margin-top: 20px;
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 10px;
+            height: 80px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 11px;
+            color: #555;
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        }
+    </style>
+    <script>
+        window.resizeTo(620, 600);
+        
+        var fso = new ActiveXObject("Scripting.FileSystemObject");
+        var shell = new ActiveXObject("WScript.Shell");
+        
+        function logMsg(msg) {
+            var log = document.getElementById('log');
+            log.innerHTML += msg + "<br>";
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function getDrives() {
+            try {
+                var locator = new ActiveXObject("WbemScripting.SWbemLocator");
+                var wmi = locator.ConnectServer(".", "root\\cimv2");
+                var colDisks = wmi.ExecQuery("Select * from Win32_LogicalDisk Where DriveType=2 OR DriveType=3");
+                var e = new Enumerator(colDisks);
+                var select = document.getElementById("driveSelect");
+                select.options.length = 0;
+                
+                for (; !e.atEnd(); e.moveNext()) {
+                    var disk = e.item();
+                    if (disk.DeviceID === "C:") continue; 
+                    
+                    var name = disk.VolumeName || "Sin nombre";
+                    var type = disk.DriveType === 2 ? "Pendrive" : "Disco";
+                    var free = disk.FreeSpace ? (Math.round(disk.FreeSpace / 1073741824 * 10)/10 + " GB libres") : "???";
+                    
+                    var opt = document.createElement("option");
+                    opt.value = disk.DeviceID;
+                    opt.text = disk.DeviceID + " [" + name + "] - " + type + " (" + free + ")";
+                    select.add(opt);
+                }
+                
+                if (select.options.length === 0) {
+                    var opt = document.createElement("option");
+                    opt.text = "No se encontraron pendrives o discos...";
+                    select.add(opt);
+                    document.getElementById("btnInstall").disabled = true;
+                } else {
+                    document.getElementById("btnInstall").disabled = false;
+                }
+            } catch(ex) {
+                logMsg("Error enumerando discos: " + ex.message);
+            }
+        }
+        
+        // Fix path parsing in HTA
+        function getCurrentDir() {
+            var p = window.location.pathname;
+            p = decodeURI(p);
+            // Remove leading slash if it exists (e.g. /C:/path)
+            if (p.charAt(0) === '/') p = p.substr(1);
+            p = p.replace(/\//g, "\\");
+            return fso.GetParentFolderName(p);
+        }
+
+        function startInstall() {
+            var select = document.getElementById("driveSelect");
+            if(select.options.length === 0 || !select.value) return;
+            
+            var targetDrive = select.value;
+            var targetFolder = targetDrive + "\\DeskGo_System";
+            
+            document.getElementById("btnInstall").disabled = true;
+            document.getElementById("btnInstall").innerText = "Instalando... (Puede tardar varios minutos)";
+            document.getElementById("progressContainer").style.display = "block";
+            
+            var pb = document.getElementById("progressBar");
+            pb.style.width = "5%";
+            
+            logMsg("Preparando instalación en " + targetDrive);
+            logMsg("Se están copiando los archivos en segundo plano...");
+            
+            var currentDir = getCurrentDir();
+            var scriptPath = currentDir + "\\temp_installer.ps1";
+            var statusPath = currentDir + "\\install_status.txt";
+            var donePath = currentDir + "\\install_done.txt";
+            
+            // Limpiar archivos anteriores si existen
+            if (fso.FileExists(statusPath)) fso.DeleteFile(statusPath);
+            if (fso.FileExists(donePath)) fso.DeleteFile(donePath);
+            
+            var psContent = 
+                "$ErrorActionPreference = 'SilentlyContinue'\n" +
+                "$statusFile = '" + statusPath + "'\n" +
+                "$doneFile = '" + donePath + "'\n" +
+                "Set-Content -Path $statusFile -Value '10'\n" +
+                "$targetFolder = '" + targetFolder + "'\n" +
+                "if (!(Test-Path $targetFolder)) { New-Item -ItemType Directory -Path $targetFolder -Force }\n" +
+                "Set-Content -Path $statusFile -Value '20'\n" +
+                "$coreFiles = @('index.html', 'style.css', 'core.js', 'apps.js', 'server.ps1', 'wallpaper.png')\n" +
+                "foreach($file in $coreFiles) {\n" +
+                "   $src = Join-Path '" + currentDir + "' $file\n" +
+                "   if (Test-Path $src) { Copy-Item -Path $src -Destination $targetFolder -Force }\n" +
+                "}\n" +
+                "Set-Content -Path $statusFile -Value '30'\n" +
+                "$browserSrc = Join-Path '" + currentDir + "' 'Browser'\n" +
+                "if (Test-Path $browserSrc) {\n" +
+                "   Copy-Item -Path $browserSrc -Destination $targetFolder -Recurse -Force\n" +
+                "}\n" +
+                "Set-Content -Path $statusFile -Value '90'\n" +
+                "$vbsPath = '" + targetDrive + "\\Abrir DeskGo.vbs'\n" +
+                "$vbsContent = @(\n" +
+                "  'Set objShell = CreateObject(\"WScript.Shell\")',\n" +
+                "  'Set objFSO = CreateObject(\"Scripting.FileSystemObject\")',\n" +
+                "  'driveLetter = objFSO.GetDriveName(WScript.ScriptFullName)',\n" +
+                "  '',\n" +
+                "  'serverPath = driveLetter & \"\\DeskGo_System\\server.ps1\"',\n" +
+                "  'chromePath = driveLetter & \"\\DeskGo_System\\Browser\\chrome-win\\chrome.exe\"',\n" +
+                "  '',\n" +
+                "  'objShell.Run \"powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \"\"\" & serverPath & \"\"\"\", 0, False',\n" +
+                "  '',\n" +
+                "  'WScript.Sleep 1500',\n" +
+                "  '',\n" +
+                "  'command = \"\"\"\" & chromePath & \"\"\" --app=\"\"http://localhost:8555\"\" --start-maximized --disable-extensions --no-first-run --no-default-browser-check\"',\n" +
+                "  'objShell.Run command, 1, True',\n" +
+                "  '',\n" +
+                "  'objShell.Run \"powershell.exe -WindowStyle Hidden -Command \"\"Invoke-RestMethod -Uri ''http://localhost:8555/api/shutdown''\"\"\", 0, False'\n" +
+                ")\n" +
+                "Set-Content -Path $vbsPath -Value $vbsContent\n" +
+                "Set-Content -Path $statusFile -Value '100'\n" +
+                "Set-Content -Path $doneFile -Value 'DONE'\n" +
+                "Start-Sleep -Seconds 2\n" +
+                "Remove-Item -Path $statusFile -Force\n" +
+                "Remove-Item -Path '" + scriptPath + "' -Force\n";
+                
+            var file = fso.CreateTextFile(scriptPath, true);
+            file.Write(psContent);
+            file.Close();
+            
+            // Ejecutar asíncronamente en segundo plano
+            shell.Run("powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \"" + scriptPath + "\"", 0, false);
+            
+            // Polling para actualizar la barra de progreso sin bloquear la interfaz
+            var checkInterval = setInterval(function() {
+                if (fso.FileExists(statusPath)) {
+                    try {
+                        var f = fso.OpenTextFile(statusPath, 1);
+                        var progress = f.ReadAll().replace(/\s+/g, '');
+                        f.Close();
+                        if(progress && !isNaN(progress)) {
+                            pb.style.width = progress + "%";
+                            if(progress == "30" && document.getElementById("btnInstall").innerText !== "Copiando Navegador...") {
+                                logMsg("Copiando Chromium (esto puede tardar, no cierres la ventana)...");
+                                document.getElementById("btnInstall").innerText = "Copiando Navegador...";
+                            }
+                        }
+                    } catch(e) {}
+                }
+                
+                if (fso.FileExists(donePath)) {
+                    clearInterval(checkInterval);
+                    pb.style.width = "100%";
+                    try { fso.DeleteFile(donePath); } catch(e) {}
+                    
+                    logMsg("Lanzador creado.");
+                    logMsg("¡Instalación completada con éxito!");
+                    document.getElementById("btnInstall").innerText = "¡Instalado Correctamente!";
+                    
+                    setTimeout(function() {
+                        alert("Instalación Completada.\nYa puedes ir a tu pendrive y abrir 'Abrir DeskGo.vbs'");
+                    }, 500);
+                }
+            }, 1000);
+        }
+
+        // FUNCIONALIDAD DE ACTUALIZACIÓN
+        function switchTab(tab) {
+            document.getElementById('tab-install').classList.remove('active');
+            document.getElementById('tab-update').classList.remove('active');
+            
+            document.getElementById('view-install').style.display = 'none';
+            document.getElementById('view-update').style.display = 'none';
+            
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.getElementById('view-' + tab).style.display = 'block';
+        }
+
+        function startUpdate() {
+            var repoUrl = document.getElementById("repoUrl").value;
+            if(!repoUrl) { alert("Introduce una URL de repositorio válida."); return; }
+            
+            var select = document.getElementById("driveSelect");
+            if(select.options.length === 0 || !select.value) { alert("Selecciona una unidad destino en la pestaña de Instalación."); return; }
+            var targetDrive = select.value;
+            
+            document.getElementById("btnUpdate").disabled = true;
+            document.getElementById("btnUpdate").innerText = "Actualizando... (No cierres la ventana)";
+            
+            logMsg("Iniciando actualización desde: " + repoUrl);
+            logMsg("Unidad destino: " + targetDrive);
+            
+            var zipUrl = repoUrl.replace(/\/$/, "") + "/archive/refs/heads/main.zip";
+            logMsg("Descargando actualización en segundo plano...");
+            
+            var currentDir = getCurrentDir();
+            var updateScriptPath = currentDir + "\\updater_temp.ps1";
+            var updateDonePath = currentDir + "\\update_done.txt";
+            
+            if (fso.FileExists(updateDonePath)) fso.DeleteFile(updateDonePath);
+            
+            var psContent = "$ErrorActionPreference = 'SilentlyContinue'\n" +
+                            "$zipPath = '" + targetDrive + "\\temp_update.zip'\n" +
+                            "Invoke-WebRequest -Uri '" + zipUrl + "' -OutFile $zipPath\n" +
+                            "Expand-Archive -Path $zipPath -DestinationPath '" + targetDrive + "\\temp_extract' -Force\n" +
+                            "$extractedFolder = Get-ChildItem -Path '" + targetDrive + "\\temp_extract' | Select-Object -First 1\n" +
+                            "$targetSys = '" + targetDrive + "\\DeskGo_System'\n" +
+                            "Copy-Item -Path \"$($extractedFolder.FullName)\\*\" -Destination $targetSys -Recurse -Force\n" +
+                            "Remove-Item -Path $zipPath -Force\n" +
+                            "Remove-Item -Path '" + targetDrive + "\\temp_extract' -Recurse -Force\n" +
+                            "Set-Content -Path '" + updateDonePath + "' -Value 'DONE'\n" +
+                            "Remove-Item -Path '" + updateScriptPath + "' -Force\n";
+                            
+            var file = fso.CreateTextFile(updateScriptPath, true);
+            file.Write(psContent);
+            file.Close();
+            
+            // Ejecutar actualización asíncronamente
+            shell.Run("powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File \"" + updateScriptPath + "\"", 0, false);
+            
+            var updatePoll = setInterval(function() {
+                if (fso.FileExists(updateDonePath)) {
+                    clearInterval(updatePoll);
+                    try { fso.DeleteFile(updateDonePath); } catch(e) {}
+                    
+                    logMsg("¡Proceso de actualización finalizado con éxito!");
+                    document.getElementById("btnUpdate").innerText = "¡Actualizado Correctamente!";
+                    document.getElementById("btnUpdate").disabled = false;
+                    setTimeout(function() {
+                        alert("Actualización Completada exitosamente.");
+                    }, 500);
+                }
+            }, 1000);
+        }
+    </script>
+</head>
+<body onload="getDrives()">
+    <div class="window">
+        <div class="titlebar">
+            <!-- macOS Window Controls Simulation (Optional but adds to the look) -->
+            <div style="display: flex; gap: 8px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f56; border: 1px solid #e0443e;"></div>
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #ffbd2e; border: 1px solid #dea123;"></div>
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #27c93f; border: 1px solid #1aab29;"></div>
+            </div>
+            <div class="title">Instalador de DeskGo OS</div>
+        </div>
+        <div class="content">
+            <div class="icon-container">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                    <line x1="12" y1="12" x2="12" y2="16"></line>
+                    <polyline points="9 13 12 16 15 13"></polyline>
+                </svg>
+            </div>
+            <h1>DeskGo OS</h1>
+            <p class="subtitle">Gestor de Instalación y Actualizaciones</p>
+            
+            <div class="segmented-control">
+                <div class="segment active" id="tab-install" onclick="switchTab('install')">Instalación Local</div>
+                <div class="segment" id="tab-update" onclick="switchTab('update')">Actualización OTA</div>
+            </div>
+            
+            <div id="view-install">
+                <div class="form-group">
+                    <label class="form-label">Selecciona el Pendrive Destino</label>
+                    <select id="driveSelect"></select>
+                </div>
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="button-group" style="justify-content: center;">
+                    <button id="btnInstall" onclick="startInstall()" style="width: 100%; padding: 10px 0;">Instalar DeskGo</button>
+                </div>
+            </div>
+            
+            <div id="view-update" style="display:none;">
+                <p style="font-size: 13px; color: #666; margin-bottom: 15px; text-align: left;">
+                    Descarga e instala actualizaciones directamente desde GitHub. Esto no borrará tus archivos personales ni el navegador Chromium.
+                </p>
+                <div class="form-group">
+                    <label class="form-label">URL del Repositorio GitHub</label>
+                    <input type="text" id="repoUrl" value="https://github.com/TuUsuario/SmartPendrive">
+                </div>
+                <div class="button-group" style="justify-content: center;">
+                    <button id="btnUpdate" onclick="startUpdate()" style="width: 100%; padding: 10px 0;">Actualizar Ahora</button>
+                </div>
+            </div>
+            
+            <div id="log">Buscando unidades...<br></div>
+        </div>
+    </div>
+</body>
+</html>

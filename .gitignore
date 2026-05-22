@@ -1,0 +1,6 @@
+Browser/
+PortableApps/
+jspaint_test*
+*.zip
+*.log
+.vscode/
