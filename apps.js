@@ -157,6 +157,19 @@ const apps = {
             showSettingsTab(null, 'perfil');
             document.querySelector('.settings-nav-item.active')?.click();
         }
+    },
+    
+    notas: { title:'Notas Rápidas', w:350, h:400,
+        html: `<div style="display:flex;flex-direction:column;height:100%;"><div class="toolbar" style="justify-content:space-between"><button class="toolbar-btn" onclick="document.getElementById('notas-area').value='';localStorage.removeItem('deskgo_notas')"><i class="fa-solid fa-trash"></i> Borrar</button><span class="toolbar-info" id="notas-info"></span></div><textarea id="notas-area" style="flex:1;background:#fff9c4;color:#333;border:none;padding:15px;font-family:inherit;font-size:14px;outline:none;resize:none" placeholder="Escribe tus notas aquí..." oninput="localStorage.setItem('deskgo_notas', this.value); document.getElementById('notas-info').textContent='Guardado'"></textarea></div>`,
+        onOpen: () => {
+            document.getElementById('notas-area').value = localStorage.getItem('deskgo_notas') || '';
+            document.getElementById('notas-info').textContent = '';
+        }
+    },
+
+    papelera: { title:'Papelera', w:550, h:400,
+        html: `<div style="display:flex;flex-direction:column;height:100%;"><div class="toolbar"><button class="toolbar-btn" onclick="alert('La papelera está vacía');"><i class="fa-solid fa-trash-can-arrow-up"></i> Vaciar Papelera</button></div><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);flex-direction:column"><i class="fa-solid fa-trash-can" style="font-size:48px;margin-bottom:15px;opacity:0.5"></i><div>No hay elementos en la papelera</div></div></div>`,
+        onOpen: () => {}
     }
 };
 

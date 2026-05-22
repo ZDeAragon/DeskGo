@@ -115,7 +115,14 @@ function createWindow(id, title, html, w=650, h=450) {
     if (di && !di.querySelector('.dock-dot')) { const d = document.createElement('span'); d.className='dock-dot'; di.appendChild(d); }
 
     win.querySelector('.close-btn').onclick = () => { win.style.animation='windowClose 0.18s ease-in forwards'; setTimeout(()=>{win.remove(); if(di){const d=di.querySelector('.dock-dot');if(d)d.remove();}},180); };
-    win.onmousedown = () => { win.style.zIndex = ++zIndexCounter; };
+    win.onmousedown = () => { win.style.zIndex = ++zIndexCounter; if(win.style.display==='none')win.style.display='block'; };
+
+    let isMin = false;
+    win.querySelector('.min-btn').onclick = () => {
+        win.style.animation = 'windowClose 0.2s ease-in forwards';
+        setTimeout(() => { win.style.display = 'none'; win.style.animation = ''; isMin = true; }, 200);
+        if(di) di.onclick = () => { if(isMin){ win.style.display = 'block'; win.style.zIndex = ++zIndexCounter; isMin=false; } };
+    };
 
     let mx=false, pb={};
     win.querySelector('.max-btn').onclick = () => {
@@ -128,6 +135,46 @@ function createWindow(id, title, html, w=650, h=450) {
     hdr.onmousedown = e => { if(e.target.classList.contains('control-btn'))return; dr=true;sx=e.clientX;sy=e.clientY;ix=win.offsetLeft;iy=win.offsetTop; };
     document.addEventListener('mousemove', e => { if(!dr)return; win.style.left=(ix+e.clientX-sx)+'px'; win.style.top=(iy+e.clientY-sy)+'px'; });
     document.addEventListener('mouseup', () => { dr=false; });
+}
+
+// ====== CALENDAR WIDGET ======
+window.toggleCalendar = function() {
+    const cw = document.getElementById('calendarWidget');
+    if(cw.style.display === 'block') { cw.style.display = 'none'; return; }
+    cw.style.display = 'block';
+    const now = new Date();
+    document.getElementById('calendar-header').textContent = now.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).replace(/^./, c => c.toUpperCase());
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    let html = '<div style="font-weight:bold;color:var(--text-secondary)">L</div><div style="font-weight:bold;color:var(--text-secondary)">M</div><div style="font-weight:bold;color:var(--text-secondary)">X</div><div style="font-weight:bold;color:var(--text-secondary)">J</div><div style="font-weight:bold;color:var(--text-secondary)">V</div><div style="font-weight:bold;color:var(--text-secondary)">S</div><div style="font-weight:bold;color:var(--text-secondary)">D</div>';
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+    const blanks = firstDay === 0 ? 6 : firstDay - 1;
+    for(let i=0; i<blanks; i++) html += '<div></div>';
+    for(let i=1; i<=daysInMonth; i++) {
+        if(i === now.getDate()) html += `<div style="background:var(--accent);color:white;border-radius:50%;width:24px;height:24px;line-height:24px;margin:auto;">${i}</div>`;
+        else html += `<div style="width:24px;height:24px;line-height:24px;margin:auto;">${i}</div>`;
+    }
+    document.getElementById('calendar-body').innerHTML = html;
+};
+
+// ====== CONTEXT MENU ======
+document.getElementById('desktop').addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const cm = document.getElementById('context-menu');
+    cm.style.display = 'block';
+    cm.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
+    cm.style.top = Math.min(e.clientY, window.innerHeight - 100) + 'px';
+});
+document.addEventListener('click', e => {
+    document.getElementById('context-menu').style.display = 'none';
+    if(!e.target.closest('#calendarWidget') && e.target.id !== 'clock') document.getElementById('calendarWidget').style.display = 'none';
+});
+
+// ====== BATTERY ======
+if(navigator.getBattery) {
+    navigator.getBattery().then(batt => {
+        const updateBatt = () => { document.getElementById('battery-status').innerHTML = `<i class="fa-solid fa-battery-${batt.level > 0.8 ? 'full' : batt.level > 0.5 ? 'three-quarters' : batt.level > 0.2 ? 'quarter' : 'empty'}"></i> ${Math.round(batt.level*100)}%`; };
+        batt.addEventListener('levelchange', updateBatt); updateBatt();
+    });
 }
 
 loadSettings();

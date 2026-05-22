@@ -88,11 +88,24 @@
             <div class="menu-right">
                 <div class="menu-item-group" id="control-center-btn" onclick="toggleControlCenter()" style="cursor: pointer; display: flex; align-items: center;">
                     <span class="menu-icon"><i class="fa-solid fa-wifi"></i></span>
-                    <span class="menu-icon"><i class="fa-solid fa-volume-high"></i></span>
-                    <span class="menu-icon"><i class="fa-solid fa-battery-full"></i></span>
+                    <span class="menu-icon" id="battery-status"><i class="fa-solid fa-battery-full"></i> 100%</span>
                 </div>
-                <span class="menu-item" id="clock">12:00</span>
+                <span class="menu-item" id="clock" onclick="toggleCalendar()" style="cursor: pointer;">12:00</span>
             </div>
+        </div>
+
+        <!-- CALENDAR WIDGET -->
+        <div class="calendar-widget" id="calendarWidget" style="display:none; position:absolute; top:36px; right:10px; width:280px; background:var(--glass-bg); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:12px; padding:15px; z-index:1000; box-shadow:var(--shadow-lg);">
+            <div id="calendar-header" style="font-weight:600; font-size:16px; margin-bottom:10px;"></div>
+            <div id="calendar-body" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; text-align:center; font-size:12px;"></div>
+        </div>
+
+        <!-- CONTEXT MENU -->
+        <div id="context-menu" style="display:none; position:absolute; background:var(--glass-bg); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:8px; padding:6px; z-index:9999; box-shadow:var(--shadow-md); min-width:160px;">
+            <div class="context-item" onclick="document.querySelector('.dock-item[data-app=ajustes]').click()">Cambiar fondo de pantalla</div>
+            <div class="dropdown-divider"></div>
+            <div class="context-item" onclick="alert('Función de Nueva Carpeta en desarrollo')">Nueva carpeta</div>
+            <div class="context-item" onclick="document.querySelector('.dock-item[data-app=editor]').click()">Nuevo archivo de texto</div>
         </div>
 
         <!-- Windows Container -->
@@ -125,6 +138,14 @@
                 <div class="dock-item" data-app="launchpad">
                     <div class="dock-icon" style="background:linear-gradient(135deg,#3F51B5,#1A237E)"><i class="fa-brands fa-windows" style="color:white"></i></div>
                     <span class="dock-tooltip">Launchpad</span>
+                </div>
+                <div class="dock-item" data-app="notas">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#ffd54f,#ffb300)"><i class="fa-solid fa-note-sticky" style="color:white"></i></div>
+                    <span class="dock-tooltip">Notas</span>
+                </div>
+                <div class="dock-item" data-app="papelera">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#90a4ae,#607d8b)"><i class="fa-solid fa-trash" style="color:white"></i></div>
+                    <span class="dock-tooltip">Papelera</span>
                 </div>
                 <div class="dock-divider"></div>
                 <div class="dock-item" data-app="ajustes">
