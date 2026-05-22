@@ -164,11 +164,6 @@ document.getElementById('desktop').addEventListener('contextmenu', e => {
     cm.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
     cm.style.top = Math.min(e.clientY, window.innerHeight - 100) + 'px';
 });
-document.addEventListener('click', e => {
-    document.getElementById('context-menu').style.display = 'none';
-    if(!e.target.closest('#calendarWidget') && e.target.id !== 'clock') document.getElementById('calendarWidget').style.display = 'none';
-});
-
 // ====== BATTERY ======
 if(navigator.getBattery) {
     navigator.getBattery().then(batt => {
@@ -176,5 +171,42 @@ if(navigator.getBattery) {
         batt.addEventListener('levelchange', updateBatt); updateBatt();
     });
 }
+
+// ====== NOTIFICATIONS ======
+window.showNotification = function(title, text, icon='fa-bell') {
+    const cont = document.getElementById('notifications-container');
+    if(!cont) return;
+    const notif = document.createElement('div');
+    notif.className = 'notif-toast';
+    notif.style = `background:var(--glass-bg); backdrop-filter:blur(20px); border:1px solid var(--glass-border); padding:12px 15px; border-radius:10px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-lg); width:280px; transform:translateX(120%); transition:transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
+    notif.innerHTML = `<div style="width:36px;height:36px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:16px;"><i class="fa-solid ${icon}"></i></div><div style="flex:1"><div style="font-weight:600;font-size:13px;margin-bottom:3px">${title}</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.3">${text}</div></div>`;
+    cont.appendChild(notif);
+    setTimeout(() => notif.style.transform = 'translateX(0)', 10);
+    setTimeout(() => {
+        notif.style.transform = 'translateX(120%)';
+        setTimeout(() => notif.remove(), 300);
+    }, 4000);
+};
+
+// ====== CONTROL CENTER ======
+window.toggleControlCenter = function() {
+    const cc = document.getElementById('controlCenter');
+    if(cc) {
+        if(cc.style.display === 'block') cc.style.display = 'none';
+        else {
+            document.getElementById('calendarWidget').style.display = 'none';
+            cc.style.display = 'block';
+        }
+    }
+};
+
+document.addEventListener('click', e => {
+    document.getElementById('context-menu').style.display = 'none';
+    if(!e.target.closest('#calendarWidget') && e.target.id !== 'clock') document.getElementById('calendarWidget').style.display = 'none';
+    if(!e.target.closest('#controlCenter') && !e.target.closest('#control-center-btn')) {
+        const cc = document.getElementById('controlCenter');
+        if(cc) cc.style.display = 'none';
+    }
+});
 
 loadSettings();

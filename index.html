@@ -108,6 +108,29 @@
             <div class="context-item" onclick="document.querySelector('.dock-item[data-app=editor]').click()">Nuevo archivo de texto</div>
         </div>
 
+        <!-- CONTROL CENTER -->
+        <div class="control-center" id="controlCenter" style="display:none; position:absolute; top:36px; right:60px; width:300px; background:var(--glass-bg); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:16px; padding:15px; z-index:1000; box-shadow:var(--shadow-lg);">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
+                <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:10px; display:flex; align-items:center; cursor:pointer;" onclick="this.classList.toggle('active-cc')">
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:#fff;margin-right:10px;"><i class="fa-solid fa-wifi"></i></div>
+                    <div><div style="font-weight:600;font-size:13px">Wi-Fi</div><div style="font-size:11px;opacity:0.7">Conectado</div></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:10px; display:flex; align-items:center; cursor:pointer;" onclick="this.classList.toggle('active-cc')">
+                    <div style="width:36px;height:36px;border-radius:50%;background:#4a90e2;display:flex;align-items:center;justify-content:center;color:#fff;margin-right:10px;"><i class="fa-brands fa-bluetooth-b"></i></div>
+                    <div><div style="font-weight:600;font-size:13px">Bluetooth</div><div style="font-size:11px;opacity:0.7">Activado</div></div>
+                </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.1); border-radius:12px; padding:15px;">
+                <div style="font-size:12px; font-weight:600; margin-bottom:10px; display:flex; align-items:center;"><i class="fa-solid fa-volume-high" style="margin-right:8px;width:15px;"></i> Sonido</div>
+                <input type="range" min="0" max="100" value="70" style="width:100%;" onchange="showNotification('Volumen cambiado', 'El volumen se ha ajustado al ' + this.value + '%', 'fa-volume-high')">
+                <div style="font-size:12px; font-weight:600; margin-bottom:10px; margin-top:15px; display:flex; align-items:center;"><i class="fa-regular fa-sun" style="margin-right:8px;width:15px;"></i> Brillo</div>
+                <input type="range" min="0" max="100" value="100" style="width:100%;" onchange="showNotification('Brillo cambiado', 'Brillo ajustado al ' + this.value + '%', 'fa-sun')">
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS CONTAINER -->
+        <div id="notifications-container" style="position:absolute; top:40px; right:15px; z-index:9999; display:flex; flex-direction:column; gap:10px;"></div>
+
         <!-- Windows Container -->
         <div id="windows-container"></div>
 
@@ -134,6 +157,14 @@
                 <div class="dock-item" data-app="safari">
                     <div class="dock-icon" style="background:linear-gradient(135deg,#00b4db,#0083b0)"><i class="fa-regular fa-compass" style="color:white"></i></div>
                     <span class="dock-tooltip">Safari</span>
+                </div>
+                <div class="dock-item" data-app="reproductor">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#ff416c,#ff4b2b)"><i class="fa-solid fa-music" style="color:white"></i></div>
+                    <span class="dock-tooltip">Reproductor</span>
+                </div>
+                <div class="dock-item" data-app="reloj">
+                    <div class="dock-icon" style="background:linear-gradient(135deg,#11998e,#38ef7d)"><i class="fa-regular fa-clock" style="color:white"></i></div>
+                    <span class="dock-tooltip">Reloj</span>
                 </div>
                 <div class="dock-item" data-app="launchpad">
                     <div class="dock-icon" style="background:linear-gradient(135deg,#3F51B5,#1A237E)"><i class="fa-brands fa-windows" style="color:white"></i></div>

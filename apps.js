@@ -170,6 +170,109 @@ const apps = {
     papelera: { title:'Papelera', w:550, h:400,
         html: `<div style="display:flex;flex-direction:column;height:100%;"><div class="toolbar"><button class="toolbar-btn" onclick="alert('La papelera está vacía');"><i class="fa-solid fa-trash-can-arrow-up"></i> Vaciar Papelera</button></div><div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);flex-direction:column"><i class="fa-solid fa-trash-can" style="font-size:48px;margin-bottom:15px;opacity:0.5"></i><div>No hay elementos en la papelera</div></div></div>`,
         onOpen: () => {}
+    },
+
+    calculadora: { title:'Calculadora', w:300, h:400,
+        html: `<div style="display:flex;flex-direction:column;height:100%;background:#222;color:white;border-radius:0 0 10px 10px;padding:15px;box-sizing:border-box;">
+            <div id="calc-display" style="flex:1;display:flex;align-items:flex-end;justify-content:flex-end;font-size:36px;padding:10px;margin-bottom:10px;overflow:hidden;background:rgba(255,255,255,0.05);border-radius:8px;">0</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+                <button class="calc-btn" onclick="calcPress('C')" style="background:#ff3b30;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">C</button>
+                <button class="calc-btn" onclick="calcPress('/')" style="background:#ff9500;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">/</button>
+                <button class="calc-btn" onclick="calcPress('*')" style="background:#ff9500;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">x</button>
+                <button class="calc-btn" onclick="calcPress('-')" style="background:#ff9500;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">-</button>
+                <button class="calc-btn" onclick="calcPress('7')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">7</button>
+                <button class="calc-btn" onclick="calcPress('8')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">8</button>
+                <button class="calc-btn" onclick="calcPress('9')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">9</button>
+                <button class="calc-btn" onclick="calcPress('+')" style="background:#ff9500;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;grid-row:span 2">+</button>
+                <button class="calc-btn" onclick="calcPress('4')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">4</button>
+                <button class="calc-btn" onclick="calcPress('5')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">5</button>
+                <button class="calc-btn" onclick="calcPress('6')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">6</button>
+                <button class="calc-btn" onclick="calcPress('1')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">1</button>
+                <button class="calc-btn" onclick="calcPress('2')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">2</button>
+                <button class="calc-btn" onclick="calcPress('3')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">3</button>
+                <button class="calc-btn" onclick="calcPress('=')" style="background:#ff9500;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;grid-row:span 2">=</button>
+                <button class="calc-btn" onclick="calcPress('0')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;grid-column:span 2">0</button>
+                <button class="calc-btn" onclick="calcPress('.')" style="background:#333;color:white;border:none;border-radius:8px;padding:15px;font-size:18px;cursor:pointer;">.</button>
+            </div>
+        </div>`,
+        onOpen: () => {
+            window.calcExpr = '';
+            window.calcPress = (v) => {
+                const d = document.getElementById('calc-display');
+                if(!d) return;
+                if(v === 'C') { window.calcExpr = ''; d.textContent = '0'; }
+                else if(v === '=') {
+                    try { 
+                        window.calcExpr = eval(window.calcExpr).toString(); 
+                        d.textContent = window.calcExpr;
+                    } catch(e) { d.textContent = 'Error'; window.calcExpr = ''; }
+                } else {
+                    if(window.calcExpr === '0' && v !== '.') window.calcExpr = '';
+                    window.calcExpr += v;
+                    d.textContent = window.calcExpr;
+                }
+            };
+        }
+    },
+
+    reproductor: { title:'Media Player', w:400, h:500,
+        html: `<div style="display:flex;flex-direction:column;height:100%;background:#111;color:white;border-radius:0 0 10px 10px;">
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1e1e1e, #000);position:relative;overflow:hidden;">
+                <i class="fa-solid fa-music" style="font-size:80px;color:var(--accent-primary);filter:drop-shadow(0 0 20px var(--accent-primary));"></i>
+            </div>
+            <div style="padding:20px;">
+                <div style="font-size:18px;font-weight:bold;margin-bottom:5px;">DeskGo Tunes</div>
+                <div style="font-size:12px;color:#aaa;margin-bottom:20px;">No hay música reproduciéndose</div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px;">
+                    <span style="font-size:10px;color:#888;">0:00</span>
+                    <input type="range" min="0" max="100" value="0" style="flex:1;height:4px;border-radius:2px;appearance:none;background:#333;outline:none;">
+                    <span style="font-size:10px;color:#888;">0:00</span>
+                </div>
+                <div style="display:flex;justify-content:center;gap:30px;align-items:center;">
+                    <button style="background:none;border:none;color:white;font-size:20px;cursor:pointer;"><i class="fa-solid fa-backward-step"></i></button>
+                    <button style="background:white;border:none;color:black;font-size:24px;cursor:pointer;width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;" onclick="alert('Selecciona un archivo de audio con el explorador para reproducir.')"><i class="fa-solid fa-play"></i></button>
+                    <button style="background:none;border:none;color:white;font-size:20px;cursor:pointer;"><i class="fa-solid fa-forward-step"></i></button>
+                </div>
+            </div>
+        </div>`,
+        onOpen: () => {}
+    },
+
+    reloj: { title:'Reloj Mundial', w:350, h:450,
+        html: `<div style="display:flex;flex-direction:column;height:100%;border-radius:0 0 10px 10px;background:var(--glass-bg);padding:20px;">
+            <div style="text-align:center;margin-bottom:30px;margin-top:20px;">
+                <div id="reloj-grande" style="font-size:48px;font-weight:300;font-variant-numeric:tabular-nums;">--:--:--</div>
+                <div id="reloj-fecha" style="font-size:14px;color:var(--text-secondary);margin-top:5px;">Cargando...</div>
+            </div>
+            <div style="font-weight:bold;margin-bottom:15px;font-size:14px;">Zonas Horarias</div>
+            <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:10px;">
+                <div><div>Nueva York</div><div style="font-size:11px;color:var(--text-tertiary)">Hoy</div></div>
+                <div id="tz-ny" style="font-size:18px;">--:--</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:10px;">
+                <div><div>Londres</div><div style="font-size:11px;color:var(--text-tertiary)">Hoy</div></div>
+                <div id="tz-lon" style="font-size:18px;">--:--</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:10px;background:rgba(255,255,255,0.05);border-radius:8px;">
+                <div><div>Tokio</div><div style="font-size:11px;color:var(--text-tertiary)">Mañana</div></div>
+                <div id="tz-tok" style="font-size:18px;">--:--</div>
+            </div>
+        </div>`,
+        onOpen: () => {
+            const updateReloj = () => {
+                if(!document.getElementById('reloj-grande')) return;
+                const d = new Date();
+                document.getElementById('reloj-grande').textContent = d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+                document.getElementById('reloj-fecha').textContent = d.toLocaleDateString([], {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+                
+                document.getElementById('tz-ny').textContent = d.toLocaleTimeString('en-US', {timeZone:'America/New_York', hour:'2-digit', minute:'2-digit', hour12:false});
+                document.getElementById('tz-lon').textContent = d.toLocaleTimeString('en-GB', {timeZone:'Europe/London', hour:'2-digit', minute:'2-digit', hour12:false});
+                document.getElementById('tz-tok').textContent = d.toLocaleTimeString('ja-JP', {timeZone:'Asia/Tokyo', hour:'2-digit', minute:'2-digit', hour12:false});
+            };
+            updateReloj();
+            if(window.relojInterval) clearInterval(window.relojInterval);
+            window.relojInterval = setInterval(updateReloj, 1000);
+        }
     }
 };
 
